@@ -10,10 +10,14 @@
 .
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace 設定（name: wendy）
+├── .gitignore
+├── LICENSE                       # MIT
+├── README.md
 └── plugins/
     └── wendy-skills/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin 設定（不設 version，改為追蹤 git commit）
+        ├── LICENSE               # symlink → ../../LICENSE（安裝時會被複製成實體檔案）
         └── skills/
             └── <skill-name>/SKILL.md
 ```
@@ -50,16 +54,30 @@ claude plugin marketplace add git@gitlab.com:<group>/<repo>.git
 
 ### Private repo
 
-Claude Code 會直接使用那台電腦上已設定好的 git 憑證來 clone，**不會跳出登入提示**，憑證沒設好就會直接失敗。安裝前請先確認那台電腦能正常 `git clone` 這個 repo：
+> Public repo 不需要任何憑證，可略過本節。
 
-- **SSH**：key 已設定好且不需要輸入 passphrase，主機已在 `known_hosts` 中
-- **HTTPS**：已透過 macOS Keychain、`gh auth login` 等 credential helper 設定好憑證
+Claude Code 會直接使用那台電腦上已設定好的 git 憑證來 clone，**不會跳出任何提示**（帳密、passphrase、主機信任都不會問），憑證沒設好就會直接失敗。
+
+GitHub 的 `owner/repo` 寫法會先嘗試 SSH，失敗才改走 HTTPS；沒有 GitHub SSH key 的電腦可設定環境變數 `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` 跳過 SSH 嘗試。
+
+- **SSH**：key 已加到 GitHub，passphrase 已存進 ssh-agent / macOS Keychain（`ssh-add --apple-use-keychain <key>`），且已執行過一次 `ssh -T git@github.com` 讓主機進入 `known_hosts`
+- **HTTPS**：credential helper 已存好憑證，例如 `gh auth login` 後再執行 `gh auth setup-git`，或 `credential.helper` 為 `osxkeychain` 並手動 clone 過一次（以 PAT 當密碼）
+
+驗證方式（模擬 Claude Code 不允許互動的情境，能直接列出 refs 就代表設定正確）：
+
+```bash
+GIT_TERMINAL_PROMPT=0 git ls-remote <repo URL>
+```
+
+每台要安裝的電腦都需各自設定一次。
 
 ## 更新
 
 **建議做法：開啟自動更新**（自建 marketplace 預設是關閉的）
 
-在每台裝置的 Claude Code session 執行 `/plugin` → Marketplaces 分頁 → 選 `wendy` → **Enable auto-update**。之後每次啟動 Claude Code 都會自動拉取最新版。
+在每台裝置的 Claude Code session 執行 `/plugin` → Marketplaces 分頁 → 選 `wendy` → **Enable auto-update**。之後每次啟動 Claude Code 都會在背景檢查並拉取最新版。
+
+> Private repo 注意：背景更新同樣不允許互動，若憑證沒有事先存好（見上方「Private repo」），更新會**靜默失敗**，plugin 停留在上次同步的版本，不會有任何錯誤提示。
 
 **手動更新：**
 
@@ -67,6 +85,8 @@ Claude Code 會直接使用那台電腦上已設定好的 git 憑證來 clone，
 claude plugin marketplace update wendy
 claude plugin update wendy-skills@wendy
 ```
+
+更新完成後需重開 session（或在 session 內執行 `/reload-plugins`）才會生效。
 
 因為 `plugin.json` 沒有設定 `version`，更新是以 git commit 為準，不需要手動升版號。
 
@@ -79,6 +99,10 @@ claude plugin validate .
 # 不安裝，直接載入本機 plugin 測試
 claude --plugin-dir plugins/wendy-skills
 ```
+
+## 授權
+
+本 repo 以 [MIT License](LICENSE) 授權。
 
 ## 待辦
 
