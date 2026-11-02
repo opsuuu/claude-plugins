@@ -1,0 +1,13 @@
+{
+  "name": "wendy",
+  "owner": {
+    "name": "Wendy Lai"
+  },
+  "plugins": [
+    {
+      "name": "wendy-skills",
+      "source": "./plugins/wendy-skills",
+      "description": "Wendy Lai's personal Claude Code skills"
+    }
+  ]
+}
