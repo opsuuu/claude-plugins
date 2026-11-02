@@ -17,7 +17,7 @@
     └── wendy-skills/
         ├── .claude-plugin/
         │   └── plugin.json       # plugin 設定（不設 version，改為追蹤 git commit）
-        ├── LICENSE               # symlink → ../../LICENSE（安裝時會被複製成實體檔案）
+        ├── LICENSE               # symlink → ../../LICENSE（從 git 來源安裝時會被複製成實體檔案）
         └── skills/
             └── <skill-name>/SKILL.md
 ```
@@ -60,13 +60,20 @@ Claude Code 會直接使用那台電腦上已設定好的 git 憑證來 clone，
 
 GitHub 的 `owner/repo` 寫法會先嘗試 SSH，失敗才改走 HTTPS；沒有 GitHub SSH key 的電腦可設定環境變數 `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` 跳過 SSH 嘗試。
 
-- **SSH**：key 已加到 GitHub，passphrase 已存進 ssh-agent / macOS Keychain（`ssh-add --apple-use-keychain <key>`），且已執行過一次 `ssh -T git@github.com` 讓主機進入 `known_hosts`
+- **SSH**：key 已加到 GitHub，passphrase 已存進 ssh-agent / macOS Keychain（`ssh-add --apple-use-keychain <key>`），且已執行過一次 `ssh -T git@github.com` 讓主機進入 `known_hosts`。另外要在 `~/.ssh/config` 加上以下設定，否則重開機後 ssh-agent 會清空，背景更新就會靜默失敗：
+
+  ```
+  Host github.com
+    AddKeysToAgent yes
+    UseKeychain yes
+  ```
+
 - **HTTPS**：credential helper 已存好憑證，例如 `gh auth login` 後再執行 `gh auth setup-git`，或 `credential.helper` 為 `osxkeychain` 並手動 clone 過一次（以 PAT 當密碼）
 
 驗證方式（模擬 Claude Code 不允許互動的情境，能直接列出 refs 就代表設定正確）：
 
 ```bash
-GIT_TERMINAL_PROMPT=0 git ls-remote <repo URL>
+GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes" git ls-remote <repo URL>
 ```
 
 每台要安裝的電腦都需各自設定一次。
@@ -75,7 +82,7 @@ GIT_TERMINAL_PROMPT=0 git ls-remote <repo URL>
 
 **建議做法：開啟自動更新**（自建 marketplace 預設是關閉的）
 
-在每台裝置的 Claude Code session 執行 `/plugin` → Marketplaces 分頁 → 選 `wendy` → **Enable auto-update**。之後每次啟動 Claude Code 都會在背景檢查並拉取最新版。
+在每台裝置的 Claude Code session 執行 `/plugin` → Marketplaces 分頁 → 選 `wendy` → **Enable auto-update**。之後每次開啟 session 並送出第一則訊息後，Claude Code 會在背景（隨機延遲最多約 10 分鐘）檢查並拉取最新版。
 
 > Private repo 注意：背景更新同樣不允許互動，若憑證沒有事先存好（見上方「Private repo」），更新會**靜默失敗**，plugin 停留在上次同步的版本，不會有任何錯誤提示。
 
