@@ -348,8 +348,6 @@ refactor(auth): extract shared auth logic
 
 - Extract shared logic into a reusable module
 - Preserve existing authentication behavior
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 ```
 
@@ -359,7 +357,7 @@ The example is illustrative. Adapt the type, scope, subject, and body to the act
 
 - Do not add a `Co-Authored-By` or `Co-authored-by` trailer.
 - Do not add any alternative spelling, capitalization, or formatting of a co-author trailer.
-- A Claude Code signature, if used, must remain separate from author or co-author trailers.
+- Do not add a Claude Code signature (e.g. `🤖 Generated with [Claude Code](...)`) by default. Add one only when the user explicitly asks for it, and keep it separate from author or co-author trailers.
 - Do not add a signature that the user or repository explicitly prohibits.
 - If repository configuration automatically appends a prohibited co-author trailer, identify the configuration and ask before changing it.
 - Never modify global Git configuration as part of this skill without explicit approval.
