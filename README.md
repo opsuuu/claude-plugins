@@ -97,6 +97,22 @@ claude plugin update wendy-skills@wendy
 
 因為 `plugin.json` 沒有設定 `version`，更新是以 git commit 為準，不需要手動升版號。
 
+## handoff 的建議設定
+
+`handoff` 會把交接檔寫到專案根目錄的 `.handoff/`。這些檔案是給下一個 session 讀的，只留在本機，不推上遠端。
+
+每台電腦設定一次全域 gitignore，就不用逐一修改每個專案的 `.gitignore`：
+
+```bash
+# 查詢全域 gitignore 的位置；沒有輸出時，git 預設讀取 ~/.config/git/ignore
+git config --global core.excludesFile
+
+# 在上一步查到的檔案加入這一行
+.handoff/
+```
+
+如果 `.handoff/` 沒有被 ignore，`handoff` 會在寫入前提醒你。
+
 ## 本機開發與驗證
 
 ```bash
@@ -114,6 +130,4 @@ claude --plugin-dir plugins/wendy-skills
 ## 待辦
 
 - [ ] 建立遠端 repo 後，把本文件中的 `<repo 擁有者>/<repo 名稱>` 換成實際值
-- [ ] 優化 `handoff`：目前寫死 `/Users/wendylai/Desktop/CLAUDE_DECISION/` 路徑，而且寫入專案外的路徑時會觸發權限確認
-- [ ] 改寫 `handoff/SKILL.md` 第 18 行（arguments 的說明）與第 51 行（不重複其他 artifacts 的內容），這兩句沿用了 mattpocock/skills 原版的寫法，要改成自己的表達
 - [ ] 確認 plugin 可用後，刪除 `~/.claude/skills/commit`、`~/.claude/skills/handoff` 原檔，並同步把全域 `~/.claude/CLAUDE.md` 裡的 `commit` / `handoff` skill 引用改成 `wendy-skills:commit` / `wendy-skills:handoff`

@@ -15,7 +15,8 @@ Write the handoff file and the paste-ready prompt in Traditional Chinese (keep c
 
 User arguments: $ARGUMENTS
 
-If arguments were given, treat them as a description of what the next session will focus on, and tailor the handoff accordingly: prioritize context relevant to that focus and trim what is not. If no arguments were given, assume the next session continues with the next stage of the plan.
+- With arguments: they describe the next session's focus. Keep details that serve that focus; cut or shorten everything else.
+- Without arguments: the focus is the next stage of the plan.
 
 ## Steps
 
@@ -23,6 +24,7 @@ If arguments were given, treat them as a description of what the next session wi
 
 Get these with commands; do not guess.
 
+- Repo root: `git rev-parse --show-toplevel`
 - Project name: the repo root folder name
   `basename "$(git rev-parse --show-toplevel)"`
 - Date: `date +%Y%m%d`
@@ -40,32 +42,38 @@ Also note any existing artifacts related to this work: plans, PRDs, ADRs, issues
 
 ### 3. Write the handoff file
 
-- Path: `/Users/wendylai/Desktop/CLAUDE_DECISION/<project>/handoff-<YYYYMMDD>-<stage>.md`
-- If the folder does not exist, create it with `mkdir -p`
-- If a file with the same name exists, do not overwrite it; append `-2`, `-3`, etc. to the filename
+- Path: `<repo root>/.handoff/handoff-<YYYYMMDD>-<stage>.md`
+  - The handoff file is for the next session to read, not for the user, so it stays inside the project and is never pushed.
+  - Before writing, run `git check-ignore -q .handoff/` from the repo root. If `.handoff/` is not ignored, tell the user to add `.handoff/` to their global gitignore (the file set by `git config --global core.excludesFile`). Do not edit any gitignore file yourself.
+- If a file with the same name already exists, do not overwrite it on your own. Show the user the existing file's path and its header (date, next-session focus), then ask which to do:
+  1. Append `-2`, `-3`, etc. to the new filename
+  2. Use a different stage name the user provides
+  3. Overwrite the existing file (it is outdated)
+  4. Keep the existing file, write nothing new, and only output the paste-ready prompt for it
 - Follow the "Handoff file template" below
 
 Writing rules:
 
 - Write for someone who has never seen this conversation. Avoid references like "the thing above" or "what we just did".
-- Do not duplicate content already captured in other artifacts (plans, PRDs, ADRs, issues, commits, diffs). Reference them by path, commit hash, or URL instead, and summarize only what the next session needs to know.
+- Treat the handoff file as an index plus the missing pieces: link existing records (plans, PRDs, ADRs, issues, commits, diffs) by path, commit hash, or URL, and spell out only what exists nowhere else, such as decisions made in conversation, pitfalls, and open questions.
 - Give file paths relative to the repo root.
 - For decisions, record why, not just what, so the next session does not reopen settled questions.
-- Record only facts and confirmed information. Clearly mark anything speculative or unverified.
+- Record only facts and confirmed information. Put anything speculative or unverified in the「待查證事項」section, together with how to verify it; do not present it as fact in other sections.
 - Redact sensitive information: API keys, tokens, passwords, connection strings, and personally identifiable information (names, phone numbers, emails, ID numbers of real people in data). Describe them generically instead (e.g. "API key is in `.env` as `XXX_API_KEY`").
 
 ### 4. Output the paste-ready prompt
 
 In the conversation, provide a short prompt inside a code block that the user can copy into the new session. It contains only:
 
-1. The full path of the handoff file
+1. The path of the handoff file, relative to the repo root
 2. An instruction for the new session to read that file first
-3. What the next session should do, in one sentence
+3. An instruction to verify the items in「待查證事項」before relying on them, instead of treating them as fact (skip this if the section is「無」)
+4. What the next session should do, in one sentence
 
 Do not repeat the handoff file's content. Example:
 
 ```
-請先讀取 /Users/wendylai/Desktop/CLAUDE_DECISION/vip-platform/handoff-20261028-stage2-permission-api.md 了解目前進度與決策，接著進行階段 3：權限管理頁面 UI 串接。
+請先讀取 .handoff/handoff-20261028-stage2-permission-api.md 了解目前進度與決策，「待查證事項」中的內容請先查證再使用，接著進行階段 3：權限管理頁面 UI 串接。
 ```
 
 ### 5. Remind the user to start a new session
@@ -107,6 +115,11 @@ Finally, remind the user to open a new session and paste the prompt. Do not cont
 ## 已做的決策與原因
 
 - <decision>：<reason; alternatives considered and why they were rejected>
+
+## 待查證事項
+
+- <unverified item>：<how to verify: which doc, command, or file to check>
+- <if there are none, write「無」>
 
 ## 已知的坑與未解問題
 
