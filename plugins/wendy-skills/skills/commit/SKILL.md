@@ -87,14 +87,12 @@ How to handle the results:
 
 #### Shared Branches
 
-The team uses two GitLab instances, and each has one shared development branch:
+A shared development branch is one that other team members also push to. Determine which branches are shared as follows:
 
-| GitLab instance            | Shared development branch |
-| -------------------------- | ------------------------- |
-| Legacy GitLab              | `dev`                     |
-| Company self-hosted GitLab | `main`                    |
+1. If CLAUDE.md (at any level) defines shared branches or branch rules, follow that definition.
+2. Otherwise, treat `main`, `master`, `develop`, `dev`, and `release/*` as shared branches.
 
-Run `git remote -v` to see which instance the repository's remote points to, and report it in the plan alongside the branch name. Also treat `master`, `develop`, and `release/*` as shared branches if they exist.
+Run `git remote -v` and report the remote in the plan alongside the branch name.
 
 - **Fetch fails** (offline, authentication, or other errors): Report the error, state that the remote state could not be verified, and ask whether to continue with local information only.
 
@@ -164,7 +162,7 @@ Prefer `fix` when the primary purpose is to correct incorrect logic, unexpected 
 
 Use `refactor` for structural improvements, extracting shared logic, improving readability or maintainability, renaming, or reorganizing modules when the change does not introduce a feature or primarily fix a bug.
 
-For this project, improvements to existing features, pages, or components should generally be classified as `refactor` when they are structural and behavior-preserving.
+Improvements to existing features, pages, or components should generally be classified as `refactor` when they are structural and behavior-preserving.
 
 Do not classify every improvement as `refactor`. Use `fix` or `perf` when bug correction or performance improvement is the actual primary purpose.
 
