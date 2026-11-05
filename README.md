@@ -124,7 +124,3 @@ claude --plugin-dir plugins/wendy-skills
 ## 授權
 
 本 repo 以 [MIT License](LICENSE) 授權。
-
-## 待辦
-
-- [ ] 確認 plugin 可用後，刪除 `~/.claude/skills/commit`、`~/.claude/skills/handoff` 原檔，並同步把全域 `~/.claude/CLAUDE.md` 裡的 `commit` / `handoff` skill 引用改成 `wendy-skills:commit` / `wendy-skills:handoff`
