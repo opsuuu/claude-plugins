@@ -4,6 +4,16 @@
 
 所有 skill 都放在 `plugins/wendy-skills/skills/` 底下，安裝後以 `/wendy-skills:<skill-name>` 呼叫。
 
+## 技能清單
+
+### 使用者或 model 都可以呼叫
+
+- **[commit](plugins/wendy-skills/skills/commit/SKILL.md)**：分析目前的改動，依目的拆成多個 Conventional Commit，經你確認後逐一 commit。
+
+### 只能由使用者手動呼叫
+
+- **[handoff](plugins/wendy-skills/skills/handoff/SKILL.md)**：把目前對話整理成交接檔和一段可直接貼上的 prompt，交給新 session 接手。需要額外設定，見 [guides/handoff.md](guides/handoff.md)。
+
 ## 目錄結構
 
 ```
@@ -13,6 +23,8 @@
 ├── .gitignore
 ├── LICENSE                       # MIT
 ├── README.md
+├── guides/                       # 個別 skill 的補充說明（給人看，不會隨 plugin 安裝）
+│   └── <skill-name>.md
 └── plugins/
     └── wendy-skills/
         ├── .claude-plugin/
@@ -22,26 +34,24 @@
             └── <skill-name>/SKILL.md
 ```
 
-新增 skill：在 `plugins/wendy-skills/skills/<skill-name>/SKILL.md` 建立檔案即可。
+新增 skill：在 `plugins/wendy-skills/skills/<skill-name>/SKILL.md` 建立檔案，並在上方「技能清單」加一行說明。如果需要額外設定或較長的說明，寫在 `guides/<skill-name>.md`，不要放進 skill 資料夾。（`docs/` 是只留在本機的筆記，已被 `.gitignore` 排除。）
 
 新增 plugin：在 `plugins/` 下建立新資料夾，再到 `.claude-plugin/marketplace.json` 的 `plugins` 陣列加一筆設定。
 
 ## 在新裝置安裝
 
-> `<repo 擁有者>/<repo 名稱>` 是**本 repo 的位置**，固定不變，跟安裝的人是誰無關。
-
 ```bash
-claude plugin marketplace add <repo 擁有者>/<repo 名稱>
+claude plugin marketplace add opsuuu/claude-plugins
 claude plugin install wendy-skills@wendy
 ```
 
 或合併成一行：
 
 ```bash
-claude plugin install wendy-skills --marketplace <repo 擁有者>/<repo 名稱>
+claude plugin install wendy-skills --marketplace opsuuu/claude-plugins
 ```
 
-也可以在 Claude Code session 內執行 `/plugin marketplace add <repo 擁有者>/<repo 名稱>`，再用 `/plugin` 選擇安裝。
+也可以在 Claude Code session 內執行 `/plugin marketplace add opsuuu/claude-plugins`，再用 `/plugin` 選擇安裝。
 
 ### 非 GitHub 主機（GitLab 等）
 
@@ -73,7 +83,11 @@ GitHub 的 `owner/repo` 寫法會先嘗試 SSH，失敗才改走 HTTPS；沒有 
 驗證方式（模擬 Claude Code 不允許互動的情境，能直接列出 refs 就代表設定正確）：
 
 ```bash
-GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes" git ls-remote <repo URL>
+# SSH
+GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes" git ls-remote git@github.com:opsuuu/claude-plugins.git
+
+# HTTPS
+GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/opsuuu/claude-plugins.git
 ```
 
 每台要安裝的電腦都需各自設定一次。
@@ -97,22 +111,6 @@ claude plugin update wendy-skills@wendy
 
 因為 `plugin.json` 沒有設定 `version`，更新是以 git commit 為準，不需要手動升版號。
 
-## handoff 的建議設定
-
-`handoff` 會把交接檔寫到專案根目錄的 `.handoff/`。這些檔案是給下一個 session 讀的，只留在本機，不推上遠端。
-
-每台電腦設定一次全域 gitignore，就不用逐一修改每個專案的 `.gitignore`：
-
-```bash
-# 查詢全域 gitignore 的位置；沒有輸出時，git 預設讀取 ~/.config/git/ignore
-git config --global core.excludesFile
-
-# 在上一步查到的檔案加入這一行
-.handoff/
-```
-
-如果 `.handoff/` 沒有被 ignore，`handoff` 會在寫入前提醒你。
-
 ## 本機開發與驗證
 
 ```bash
@@ -129,5 +127,4 @@ claude --plugin-dir plugins/wendy-skills
 
 ## 待辦
 
-- [ ] 建立遠端 repo 後，把本文件中的 `<repo 擁有者>/<repo 名稱>` 換成實際值
 - [ ] 確認 plugin 可用後，刪除 `~/.claude/skills/commit`、`~/.claude/skills/handoff` 原檔，並同步把全域 `~/.claude/CLAUDE.md` 裡的 `commit` / `handoff` skill 引用改成 `wendy-skills:commit` / `wendy-skills:handoff`
