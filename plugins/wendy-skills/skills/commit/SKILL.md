@@ -14,7 +14,7 @@ Analyze, organize, and commit the current Git changes. Follow the workflow and s
 3. Every commit message must accurately describe the actual changes being committed.
 4. Never commit all changes together simply because they are currently in the working tree.
 5. **Never run `git add`, `git commit`, or any command that changes the Git index before the user explicitly approves the proposed commit plan.**
-6. Never commit `CLAUDE.md`, regardless of its status.
+6. Never commit a `CLAUDE.md` file unless the repository already tracks it. Never commit handoff files under `.handoff/`, even when they are not ignored.
 7. **Never generate a `Co-Authored-By` or `Co-authored-by` trailer in any commit message.**
 8. Never discard, overwrite, or revert the user's existing changes.
 9. Preserve unrelated working-tree changes and existing staged changes.
@@ -43,7 +43,7 @@ Identify and distinguish:
 - Untracked files
 - Added, deleted, and renamed files
 - Changes belonging to unrelated work
-- `CLAUDE.md` and other files that must not be committed
+- Untracked `CLAUDE.md` files, `.handoff/` files, and other files that must not be committed
 
 Important considerations:
 
@@ -82,19 +82,20 @@ How to handle the results:
 - **Up to date or ahead only**: Proceed normally.
 - **Behind or diverged**: Warn the user in the commit plan that committing now will create diverged history, and that a later push will require a pull, rebase, or merge. Ask how they want to proceed.
 - **No upstream**: Note it in the plan. Do not set an upstream.
-- **Shared development branch**: State it prominently at the top of the commit plan. Approving the plan counts as confirmation, so do not ask a separate question. Treat any behind or diverged state on these branches as a high-priority warning, because other team members push to them.
+- **Shared development branch**: State it prominently at the top of the commit plan. Approving the plan counts as confirmation, so do not ask a separate question. Treat any behind or diverged state on these branches as a high-priority warning, because others may push to them.
 - **Detached HEAD or an operation in progress**: Flag it clearly and ask for confirmation before continuing.
+- **Fetch fails** (offline, authentication, or other errors): Report the error, state that the remote state could not be verified, and ask whether to continue with local information only.
 
 #### Shared Branches
 
-A shared development branch is one that other team members also push to. Determine which branches are shared as follows:
+Treat a branch as a shared development branch if either of these applies:
 
-1. If CLAUDE.md (at any level) defines shared branches or branch rules, follow that definition.
-2. Otherwise, treat `main`, `master`, `develop`, `dev`, and `release/*` as shared branches.
+- Its name matches `main`, `master`, `develop`, `dev`, or `release/*`.
+- A CLAUDE.md (at any level) explicitly names it as a shared branch.
 
-Run `git remote -v` and report the remote in the plan alongside the branch name.
+If a CLAUDE.md explicitly says a branch is not shared, or that the repository has no shared branches (for example, a solo repository), do not treat it as shared, even if its name matches the list above.
 
-- **Fetch fails** (offline, authentication, or other errors): Report the error, state that the remote state could not be verified, and ask whether to continue with local information only.
+Only explicit statements about shared branches count. Other branch rules, such as which branch to push to or merge into, do not.
 
 Never run `git pull`, `git merge`, `git rebase`, `git push`, `git branch --set-upstream-to`, or `git push -u` as part of this check. Synchronizing with the remote requires explicit user approval.
 
@@ -162,8 +163,6 @@ Prefer `fix` when the primary purpose is to correct incorrect logic, unexpected 
 
 Use `refactor` for structural improvements, extracting shared logic, improving readability or maintainability, renaming, or reorganizing modules when the change does not introduce a feature or primarily fix a bug.
 
-Improvements to existing features, pages, or components should generally be classified as `refactor` when they are structural and behavior-preserving.
-
 Do not classify every improvement as `refactor`. Use `fix` or `perf` when bug correction or performance improvement is the actual primary purpose.
 
 **`chore`**
@@ -191,7 +190,7 @@ For every proposed group, include:
 - Whether partial staging is required
 - Relevant risks or unresolved questions
 
-Also identify files that will be excluded, especially `CLAUDE.md`.
+Also identify files that will be excluded, especially untracked `CLAUDE.md` files and `.handoff/` files. If `.handoff/` shows up as untracked, suggest adding it to the global gitignore.
 
 Include the branch and remote state from step 1.5 at the top of the plan: the current branch, its upstream, ahead/behind counts, and any warnings.
 
@@ -239,7 +238,7 @@ Do not silently change the approved grouping. If the actual changes differ mater
 - Inspect the staged diff after every staging operation.
 - If partial staging cannot be performed safely, do not stage the entire file as a workaround. Explain the limitation and ask the user how to proceed.
 - Preserve unrelated staged changes. Do not unstage, reset, or overwrite existing staged content without explicit approval.
-- Never stage or commit `CLAUDE.md`.
+- Never stage or commit a `CLAUDE.md` file that the repository does not already track, or any file under `.handoff/`.
 - Do not include untracked files unless they belong to the approved group.
 - If a staged change's ownership or intended destination is unclear, stop and ask.
 
